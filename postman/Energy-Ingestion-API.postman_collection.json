@@ -1,0 +1,233 @@
+{
+  "info": {
+    "name": "Energy Ingestion Engine API",
+    "description": "High-Scale Telemetry Ingestion for Smart Meters and EV Fleets",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check API and database health status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Telemetry - Ingestion",
+      "item": [
+        {
+          "name": "Ingest Meter Telemetry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meterId\": \"METER-001\",\n  \"kwhConsumedAc\": 150.5,\n  \"voltage\": 240.2,\n  \"timestamp\": \"{{$isoTimestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/telemetry/meter",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "telemetry", "meter"]
+            },
+            "description": "Ingest single meter telemetry reading (AC energy from grid)"
+          }
+        },
+        {
+          "name": "Ingest Vehicle Telemetry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicleId\": \"VH-001\",\n  \"soc\": 75.5,\n  \"kwhDeliveredDc\": 45.2,\n  \"batteryTemp\": 32.5,\n  \"timestamp\": \"{{$isoTimestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/telemetry/vehicle",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "telemetry", "vehicle"]
+            },
+            "description": "Ingest single vehicle telemetry reading (DC energy to battery)"
+          }
+        },
+        {
+          "name": "Bulk Ingest Telemetry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meters\": [\n    {\n      \"meterId\": \"METER-001\",\n      \"kwhConsumedAc\": 150.5,\n      \"voltage\": 240.2,\n      \"timestamp\": \"2025-01-31T10:00:00Z\"\n    },\n    {\n      \"meterId\": \"METER-002\",\n      \"kwhConsumedAc\": 220.3,\n      \"voltage\": 238.5,\n      \"timestamp\": \"2025-01-31T10:00:00Z\"\n    }\n  ],\n  \"vehicles\": [\n    {\n      \"vehicleId\": \"VH-001\",\n      \"soc\": 75.5,\n      \"kwhDeliveredDc\": 45.2,\n      \"batteryTemp\": 32.5,\n      \"timestamp\": \"2025-01-31T10:00:00Z\"\n    },\n    {\n      \"vehicleId\": \"VH-002\",\n      \"soc\": 60.0,\n      \"kwhDeliveredDc\": 38.7,\n      \"batteryTemp\": 35.2,\n      \"timestamp\": \"2025-01-31T10:00:00Z\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/telemetry/bulk",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "telemetry", "bulk"]
+            },
+            "description": "Bulk ingest multiple meter and vehicle telemetry readings (recommended for high throughput)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Telemetry - Status",
+      "item": [
+        {
+          "name": "Get Meter Status (Live State)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/telemetry/meter/:meterId/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "telemetry", "meter", ":meterId", "status"],
+              "variable": [
+                {
+                  "key": "meterId",
+                  "value": "METER-001",
+                  "description": "Meter identifier"
+                }
+              ]
+            },
+            "description": "Get current meter status from live state table (O(1) lookup)"
+          }
+        },
+        {
+          "name": "Get Vehicle Status (Live State)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/telemetry/vehicle/:vehicleId/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "telemetry", "vehicle", ":vehicleId", "status"],
+              "variable": [
+                {
+                  "key": "vehicleId",
+                  "value": "VH-001",
+                  "description": "Vehicle identifier"
+                }
+              ]
+            },
+            "description": "Get current vehicle status from live state table (O(1) lookup)"
+          }
+        },
+        {
+          "name": "Get Queue Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/telemetry/queue/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "telemetry", "queue", "status"]
+            },
+            "description": "Get current ingestion queue sizes for monitoring batch processing"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Get Vehicle Performance (24h)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/analytics/performance/:vehicleId",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "analytics", "performance", ":vehicleId"],
+              "variable": [
+                {
+                  "key": "vehicleId",
+                  "value": "VH-001",
+                  "description": "Vehicle identifier"
+                }
+              ]
+            },
+            "description": "Get 24-hour performance summary including:\n- Total AC consumed vs DC delivered\n- Efficiency Ratio (DC/AC)\n- Average battery temperature\n- Active alerts for efficiency or temperature issues"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Metrics",
+      "item": [
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/metrics",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "metrics"]
+            },
+            "description": "Prometheus-compatible metrics endpoint for monitoring"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Load Test Scenarios",
+      "item": [
+        {
+          "name": "Simulate 1-Minute Heartbeat (10 Meters)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meters\": [\n    { \"meterId\": \"METER-001\", \"kwhConsumedAc\": 150.5, \"voltage\": 240.2, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"meterId\": \"METER-002\", \"kwhConsumedAc\": 220.3, \"voltage\": 238.5, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"meterId\": \"METER-003\", \"kwhConsumedAc\": 180.1, \"voltage\": 241.0, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"meterId\": \"METER-004\", \"kwhConsumedAc\": 195.8, \"voltage\": 239.8, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"meterId\": \"METER-005\", \"kwhConsumedAc\": 210.2, \"voltage\": 240.5, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"meterId\": \"METER-006\", \"kwhConsumedAc\": 165.4, \"voltage\": 238.9, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"meterId\": \"METER-007\", \"kwhConsumedAc\": 188.7, \"voltage\": 241.2, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"meterId\": \"METER-008\", \"kwhConsumedAc\": 175.3, \"voltage\": 239.5, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"meterId\": \"METER-009\", \"kwhConsumedAc\": 202.1, \"voltage\": 240.8, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"meterId\": \"METER-010\", \"kwhConsumedAc\": 158.9, \"voltage\": 238.2, \"timestamp\": \"{{$isoTimestamp}}\" }\n  ],\n  \"vehicles\": [\n    { \"vehicleId\": \"VH-001\", \"soc\": 75.5, \"kwhDeliveredDc\": 127.9, \"batteryTemp\": 32.5, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"vehicleId\": \"VH-002\", \"soc\": 60.0, \"kwhDeliveredDc\": 187.3, \"batteryTemp\": 35.2, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"vehicleId\": \"VH-003\", \"soc\": 82.3, \"kwhDeliveredDc\": 153.1, \"batteryTemp\": 30.8, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"vehicleId\": \"VH-004\", \"soc\": 45.7, \"kwhDeliveredDc\": 166.4, \"batteryTemp\": 38.1, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"vehicleId\": \"VH-005\", \"soc\": 90.2, \"kwhDeliveredDc\": 178.7, \"batteryTemp\": 28.5, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"vehicleId\": \"VH-006\", \"soc\": 55.8, \"kwhDeliveredDc\": 140.6, \"batteryTemp\": 33.9, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"vehicleId\": \"VH-007\", \"soc\": 68.4, \"kwhDeliveredDc\": 160.4, \"batteryTemp\": 31.2, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"vehicleId\": \"VH-008\", \"soc\": 72.1, \"kwhDeliveredDc\": 149.0, \"batteryTemp\": 34.5, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"vehicleId\": \"VH-009\", \"soc\": 38.9, \"kwhDeliveredDc\": 171.8, \"batteryTemp\": 36.8, \"timestamp\": \"{{$isoTimestamp}}\" },\n    { \"vehicleId\": \"VH-010\", \"soc\": 85.6, \"kwhDeliveredDc\": 135.1, \"batteryTemp\": 29.7, \"timestamp\": \"{{$isoTimestamp}}\" }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/telemetry/bulk",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "telemetry", "bulk"]
+            },
+            "description": "Simulates a 1-minute heartbeat batch from 10 meters and 10 vehicles"
+          }
+        }
+      ]
+    }
+  ]
+}
