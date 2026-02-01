@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm ci --only=production=false
+RUN npm install
 
 # Copy source and build
 COPY . .
@@ -28,13 +28,12 @@ COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/package*.json ./
 
-# Install curl for health checks
+# Optional: curl for health checks
 RUN apk add --no-cache curl
 
 USER nestjs
 
 EXPOSE 3000
-
 ENV NODE_ENV=production
 
 CMD ["node", "dist/main.js"]
